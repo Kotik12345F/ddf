@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Штрафы</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #ADD8E6; /* Светло-синий фон */
+      color: #00008B; /* Темно-синий цвет текста */
+    }
+
+    header {
+      background-color: #0000CD; /* Синий цвет заголовка */
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    textarea {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #0000CD; /* Синий цвет кнопки */
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .info-item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      display: flex; /* Добавляем flex для горизонтального выравнивания */
+      align-items: center; /* Выравниваем по вертикали */
+    }
+
+    .info-item img {
+      max-width: 150px; /* Фиксированная ширина для изображений */
+      height: 100px;  /* Фиксированная высота для изображений */
+      object-fit: cover; /* Покрываем всю область предварительного просмотра */
+      margin-right: 10px; /* Добавляем отступ между картинкой и текстом */
+    }
+
+    .info-item p {
+      margin: 0; /* Убираем отступы для абзацев */
+    }
+
+    footer {
+      background-color: #0000CD; /* Синий цвет подвала */
+      color: white;
+      text-align: center;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+    }
+
+    .message {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+      padding: 10px;
+      border: 1px solid #008000;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Штрафы</h1>
+  </header>
+
+  <div class="container" id="info-page">
+    <h2>Список штрафов</h2>
+    <a href="штраф.html">Click me</a>
+    <div id="info-list">
+      </div>
+
+  </div>
+
+  <script>
+    const infoList = document.getElementById('info-list');
+    const storedData = JSON.parse(localStorage.getItem('shtrf')) || [];
+
+    // Отображение данных на странице
+    storedData.forEach((item, index) => {
+      const infoItem = document.createElement('div');
+      infoItem.classList.add('info-item');
+
+      const img = document.createElement('img');
+      img.src = item.photo;
+      infoItem.appendChild(img);
+
+      const violation = document.createElement('p');
+      violation.textContent = "Нарушение: " + item.violation;
+      infoItem.appendChild(violation);
+
+      const location = document.createElement('p');
+      location.textContent = "Место нарушения: " + item.location;
+      infoItem.appendChild(location);
+
+      const carNumber = document.createElement('p');
+      carNumber.textContent = "Номер машины: " + item.carNumber;
+      infoItem.appendChild(carNumber);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Удалить';
+      deleteButton.addEventListener('click', () => {
+        infoItem.remove(); // Удаление элемента с DOM
+        deleteFromStorage(item.violation); // Удаление из localStorage
+      });
+      infoItem.appendChild(deleteButton);
+
+      const approveButton = document.createElement('button');
+      approveButton.textContent = 'Одобрить';
+      approveButton.addEventListener('click', () => {
+        approveItem(item); // Вызываем функцию для оповещения первой страницы
+      });
+      infoItem.appendChild(approveButton);
+
+      infoList.appendChild(infoItem);
+    });
+
+    // Функция для удаления элемента из localStorage
+    function deleteFromStorage(violation) {
+      const updatedData = storedData.filter(item => item.violation !== violation);
+      localStorage.setItem('shtrf', JSON.stringify(updatedData));
+    }
+
+    // Функция для оповещения первой страницы о принятии штрафа
+    function approveItem(item) {
+      window.opener.postMessage({ action: 'approve', item: item }, '*');
+    }
+  </script>
+
+</body>
+</html>

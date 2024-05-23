@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Добавить штраф</title>
+  <script src="script.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #ADD8E6; /* Светло-синий фон */
+      color: #00008B; /* Темно-синий цвет текста */
+    }
+
+    header {
+      background-color: #0000CD; /* Синий цвет заголовка */
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    textarea {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #0000CD; /* Синий цвет кнопки */
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .message {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+      padding: 10px;
+      border: 1px solid #008000;
+      border-radius: 5px;
+    }
+
+    footer {
+      background-color: #0000CD; /* Синий цвет подвала */
+      color: white;
+      text-align: center;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+    }
+
+    #photoPreview {
+      width: 200px; /* Указываем фиксированную ширину для предварительного просмотра */
+      height: 150px; /* Указываем фиксированную высоту для предварительного просмотра */
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    #photoPreview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Покрываем всю область предварительного просмотра */
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Добавить штраф</h1>
+  </header>
+  <div id="admin-link">
+    <button onclick="checkPassword()">админ</button>
+  </div>
+
+  <div class="container">
+    <form id="add-info-form" enctype="multipart/form-data">
+      <label for="photo">Фото:</label>
+      <input type="file" id="photo" accept="image/*" required>
+      <div id="photoPreview"></div>
+
+      <label for="violation">Нарушение:</label>
+      <input type="text" id="violation" required>
+
+      <label for="location">Место нарушения:</label>
+      <input type="text" id="location" required>
+
+      <label for="car_number">Номер машины:</label>
+      <input type="text" id="car_number" required>
+
+      <button type="submit">Отправить</button>
+    </form>
+
+    <div id="message" class="message"></div>
+  </div>
+
+
+  <script>
+    const addInfoForm = document.getElementById('add-info-form');
+    const messageDiv = document.getElementById('message');
+    const photoPreview = document.getElementById('photoPreview');
+
+    // Обработка выбора фото
+    const photoInput = document.getElementById('photo');
+    photoInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          photoPreview.innerHTML = '<img src="' + e.target.result + '">';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        photoPreview.innerHTML = '';
+      }
+    });
+
+    // Отправка данных на страницу штрафов
+    addInfoForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const photoFile = document.getElementById('photo').files[0];
+      const violation = document.getElementById('violation').value;
+      const location = document.getElementById('location').value;
+      const carNumber = document.getElementById('car_number').value;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const photoDataUrl = e.target.result; // Получение data URL
+        const newItem = {
+          photo: photoDataUrl,
+          violation: violation,
+          location: location,
+          carNumber: carNumber
+        };
+
+        // Загрузка данных в localStorage
+        const storedData = JSON.parse(localStorage.getItem('shtrf')) || [];
+        storedData.push(newItem);
+        localStorage.setItem('shtrf', JSON.stringify(storedData));
+
+        // Открытие новой страницы со штрафами
+        const newWindow = window.open('#.html', '_blank');
+
+        // Отправка сообщения на страницу штрафов
+        newWindow.postMessage({ action: 'add', item: newItem }, '*');
+
+        // Очистка формы
+        addInfoForm.reset();
+        photoPreview.innerHTML = ''; // Очистка предварительного просмотра
+        messageDiv.textContent = "Штраф добавлен";
+      };
+      reader.readAsDataURL(photoFile);
+    });
+
+    // Получение сообщений от страницы штрафов
+    window.addEventListener('message', (event) => {
+      if (event.data.action === 'approve') {
+        messageDiv.textContent = "Штраф одобрен!";
+      }
+    });
+  </script>
+
+</body>
+</html>

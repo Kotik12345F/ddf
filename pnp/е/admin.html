@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Админ-панель</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .container {
+      padding: 20px;
+      width: 80%;
+      margin: 50px auto;
+    }
+
+    .product {
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .product-info img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .product-name {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    button {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .cart-list {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .cart-item {
+      background-color: #eee;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-item button {
+      background-color: #ccc;
+      color: #333;
+    }
+
+    #add-product-form {
+      margin-top: 20px;
+    }
+
+    #add-product-form input,
+    #add-product-form select {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Админ-панель</h1>
+  </header>
+
+  <div class="container">
+    <h2>Заказ</h2>
+
+    <ul class="cart-list" id="admin-cart-list">
+      </ul>
+
+    <h2>Добавить товар</h2>
+
+    <form id="add-product-form">
+      <label for="product-name">Название товара:</label>
+      <input type="text" id="product-name" required>
+
+      <label for="product-image">Изображение (URL):</label>
+      <input type="text" id="product-image" required>
+
+      <button type="submit">Опубликовать</button>
+    </form>
+  </div>
+
+  <script>
+    const adminCartList = document.getElementById('admin-cart-list');
+    const addProductForm = document.getElementById('add-product-form');
+    let products = JSON.parse(localStorage.getItem('products')) || [
+      { id: 'orange', name: 'Апельсин', image: 'orange.png' },
+      { id: 'kiwi', name: 'Киви', image: 'kiwi.png' },
+      { id: 'grape', name: 'Виноград', image: 'grape.png' },
+      { id: 'milk', name: 'Молоко', image: 'milk.png' }
+    ];
+
+    // Загрузка данных о корзине
+    const cart = JSON.parse(localStorage.getItem('adminCart')) || [];
+
+    // Отображение товаров в корзине
+    function updateAdminCartList() {
+      adminCartList.innerHTML = '';
+      cart.forEach(item => {
+        const cartItem = document.createElement('li');
+        cartItem.classList.add('cart-item');
+        cartItem.innerHTML = `
+          <span>${item.name} (количество: ${item.count})</span>
+        `;
+        adminCartList.appendChild(cartItem);
+      });
+    }
+
+    // Добавление нового товара
+    addProductForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const productName = document.getElementById('product-name').value;
+      const productImage = document.getElementById('product-image').value;
+
+      // Сохранение данных о товаре в localStorage
+      const products = JSON.parse(localStorage.getItem('products')) || [];
+      products.push({ id: productName.toLowerCase(), name: productName, image: productImage });
+      localStorage.setItem('products', JSON.stringify(products));
+
+      // Обновление товаров на странице "Товары"
+      const productList = JSON.parse(localStorage.getItem('products')) || [];
+      const productsDiv = document.querySelector('.products');
+      productsDiv.innerHTML = '';
+      productList.forEach(product => {
+        const productDiv = document.createElement('div');
+        productDiv.classList.add('product');
+        productDiv.id = `product-${product.id}`;
+        productDiv.innerHTML = `
+          <div class="product-info">
+            <img src="${product.image}" alt="${product.name}">
+            <div>
+              <span class="product-name">${product.name}</span>
+            </div>
+          </div>
+          <button class="add-to-cart" data-product-id="${product.id}">Добавить в корзину</button>
+        `;
+        productsDiv.appendChild(productDiv);
+      });
+    });
+
+    // Загрузка данных корзины и товаров при загрузке страницы
+    updateAdminCartList();
+
+    // Обновление товаров на странице "Товары" при загрузке
+    // (Этот код нужно добавить в admin.html)
+    const productsDiv = document.querySelector('.products');
+    productsDiv.innerHTML = '';
+    products.forEach(product => {
+      const productDiv = document.createElement('div');
+      productDiv.classList.add('product');
+      productDiv.id = `product-${product.id}`;
+      productDiv.innerHTML = `
+        <div class="product-info">
+          <img src="${product.image}" alt="${product.name}">
+          <div>
+            <span class="product-name">${product.name}</span>
+          </div>
+        </div>
+        <button class="add-to-cart" data-product-id="${product.id}">Добавить в корзину</button>
+      `;
+      productsDiv.appendChild(productDiv);
+    });
+
+  </script>
+
+</body>
+</html>

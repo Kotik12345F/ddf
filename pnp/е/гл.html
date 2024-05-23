@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Товары</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .container {
+      padding: 20px;
+      width: 80%;
+      margin: 50px auto;
+    }
+
+    .product {
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .product-info img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .product-name {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    button {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .cart-list {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .cart-item {
+      background-color: #eee;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-item button {
+      background-color: #ccc;
+      color: #333;
+    }
+
+    #add-product-form {
+      margin-top: 20px;
+    }
+
+    #add-product-form input,
+    #add-product-form select {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Товары</h1>
+  </header>
+
+  <div class="container">
+    <h2>Наши товары</h2>
+
+    <div class="products" id="products-list">
+      </div>
+
+    <h2>Корзина</h2>
+
+    <ul class="cart-list" id="cart-list">
+      </ul>
+
+    <button id="buy-button" onclick="openAdminPage()">Купить товар</button>
+  </div>
+
+  <script>
+    const productsList = document.getElementById('products-list');
+    const cartList = document.getElementById('cart-list');
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let products = JSON.parse(localStorage.getItem('products')) || [
+      { id: 'orange', name: 'Апельсин', image: 'orange.png' },
+      { id: 'kiwi', name: 'Киви', image: 'kiwi.png' },
+      { id: 'grape', name: 'Виноград', image: 'grape.png' },
+      { id: 'milk', name: 'Молоко', image: 'milk.png' }
+    ];
+
+    // Отображение товаров на странице
+    function updateProductsList() {
+      productsList.innerHTML = '';
+      products.forEach(product => {
+        const productDiv = document.createElement('div');
+        productDiv.classList.add('product');
+        productDiv.id = `product-${product.id}`;
+        productDiv.innerHTML = `
+          <div class="product-info">
+            <img src="${product.image}" alt="${product.name}">
+            <div>
+              <span class="product-name">${product.name}</span>
+            </div>
+          </div>
+          <button class="add-to-cart" data-product-id="${product.id}">Добавить в корзину</button>
+        `;
+        productsList.appendChild(productDiv);
+      });
+    }
+
+    // Добавление товара в корзину
+    productsList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('add-to-cart')) {
+        const productId = event.target.dataset.productId;
+        const productName = event.target.parentElement.querySelector('.product-name').textContent;
+
+        const existingItem = cart.find(item => item.id === productId);
+        if (existingItem) {
+          existingItem.count++;
+        } else {
+          cart.push({ id: productId, name: productName, count: 1 });
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartList();
+      }
+    });
+
+    // Обновление списка корзины
+    function updateCartList() {
+      cartList.innerHTML = '';
+      cart.forEach(item => {
+        const cartItem = document.createElement('li');
+        cartItem.classList.add('cart-item');
+        cartItem.innerHTML = `
+          <span>${item.name} (количество: ${item.count})</span>
+          <button class="remove-from-cart" data-product-id="${item.id}">Удалить</button>
+        `;
+        cartList.appendChild(cartItem);
+      });
+    }
+
+    // Удаление товара из корзины
+    cartList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('remove-from-cart')) {
+        const productId = event.target.dataset.productId;
+        cart = cart.filter(item => item.id !== productId);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartList();
+      }
+    });
+
+    // Открытие страницы админа
+    function openAdminPage() {
+      window.open('admin.html', '_blank');
+      localStorage.setItem('adminCart', JSON.stringify(cart));
+    }
+
+    // Загрузка корзины и товаров при загрузке страницы
+    updateProductsList();
+    updateCartList();
+  </script>
+
+</body>
+</html>
